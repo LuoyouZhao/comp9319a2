@@ -11,5 +11,5 @@ void R_Rotate(PNode* node);
 void L_Rotate(PNode* node);
 void leftBalance(PNode* node);
 void rightBalance(PNode* node);
-void InsertKeyValue(PNode* node, int index, int pos, bool* higher);
+void InsertKeyValue(PNode* node, int index, int pos, int* higher);
 int SearchTree(PNode root, int pos);

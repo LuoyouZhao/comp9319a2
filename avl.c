@@ -1,32 +1,35 @@
 #include "avl.h"
 #include<stdio.h>
 #include<stdlib.h>
-
-#define EH 0       //equal
-#define LH 1       //left higher
-#define RH -1      //right higher
  
+ 
+typedef int dataType;
+ 
+#define EH 0       //左右子树一样高
+#define LH 1       //左子树比右子树高
+#define RH -1      //右子树比左子树高
+ 
+ 
+//定义节点结构
 typedef struct Node {
-	int index;             
-	int pos;
-	int BalanceFactor;            
+	dataType keyValue;             //数据
+	int BalanceFactor;             //平衡因子
 	struct Node *leftChild, *rightChild;
 }*PNode;
  
  
-//create node
-PNode createNode(int index, int pos) {
-	PNode node = (PNode)malloc(sizeof(Node));
-	node->index = index;
-	node->pos = pos;
-	node->BalanceFactor = EH;
-	node->leftChild = NULL;
-	node->rightChild = NULL;
-	return node;
+//为新建一个节点
+PNode createNode(dataType keyValue) {
+	PNode newNode = (PNode)malloc(sizeof(Node));
+	newNode->keyValue = keyValue;
+	newNode->BalanceFactor = EH;
+	newNode->leftChild = NULL;
+	newNode->rightChild = NULL;
+	return newNode;
 }
  
  
-//r_rotate
+//右旋 顺时针旋转
 void R_Rotate(PNode* node) {
 	PNode tmp = (*node)->leftChild;
 	(*node)->leftChild = tmp->rightChild;
@@ -34,7 +37,7 @@ void R_Rotate(PNode* node) {
     (*node) = tmp;
 }
  
-//l_rotate
+//左旋，逆时针旋转
 void L_Rotate(PNode* node) {
 	PNode tmp = (*node)->rightChild;
 	(*node)->rightChild = tmp->leftChild;
@@ -111,87 +114,69 @@ void rightBalance(PNode* node) {
  
  
 //插入新值,higher用于判定是否需要调整平衡因子
-void InsertKeyValue(PNode* node, int index, int pos, bool* higher) {
-    //create new node
-	(*node) = createNode(index, pos);
-	*higher=true;
-	else if (pos < (*node)->pos) {                  //插入到左子树中
+int InsertKeyValue(PNode* node, dataType keyValue,int* higher) {
+	if ((*node) == NULL) {                                    //树中不包含此键值，则新建一个节点，
+		(*node) = createNode(keyValue);
+		*higher=1;
+	}
+	else if ((*node)->keyValue == keyValue) {                //树中已经包含此键值，则不需要插入
+		*higher = 0;
+		return 0;
+	}
+	else if (keyValue < (*node)->keyValue) {                  //插入到左子树中
+		if (!InsertKeyValue(&(*node)->leftChild, keyValue, higher))   //如果左子树中存在该节点
+			return 0;
 		if (*higher) {   
 			switch ((*node)->BalanceFactor)
 			{
 			case LH:
 				leftBalance(node);
-				*higher = false;
+				*higher = 0;
 				break;
 			case RH:
 				(*node)->BalanceFactor = EH;
-				*higher = false;
+				*higher = 0;
 				break;
 			case EH:
 				(*node)->BalanceFactor = LH;
-				*higher = true;
+				*higher = 1;
 				break;
 			}
 		}
 	}
 	else {
+		if (!InsertKeyValue(&(*node)->rightChild, keyValue,higher))   //如果右子树中存在该节点
+			return 0;
 		if (*higher) {
 			switch ((*node)->BalanceFactor)
 			{
 			case LH:                                                  
 				(*node)->BalanceFactor = EH;
-				*higher = false;
+				*higher = 0;
 				break;
 			case RH:
 				rightBalance(node);
-				*higher = false;
+				*higher = 0;
 				break;
 			case EH:
 				(*node)->BalanceFactor = RH;
-				*higher = true;
+				*higher = 1;
 				break;
 			}
 		}
 	}
+	return 1;
 }
-
-int SearchTree(PNode root, int pos) {
-	if (root->pos == pos) {
-		return root->index;
-	}
-	else if (pos > root->pos && root->rightChild) {
-		return SearchTree(root->rightChild, pos);
-	}
-	else if(pos < root->pos && root->leftChild) {
-		return SearchTree(root->leftChild, pos);
-	}
-	else {
-		return -1;
-	}
-}
-
-void printfTree(PNode root) {
-    if (root) {
-        if (root->leftChild) {
-            printf("%d is %d's left child\n", root->leftChild->pos, root->pos);
-            printfTree(root->leftChild);
-        }
-        if (root->rightChild) {
-            printf("%d is %d's right child\n", root->rightChild->pos, root->pos);
-            printfTree(root->rightChild);
-        }
-    }
-}
-
 int main()
 {
 	int i, dataArr[] = { 1,2,3,4,5,6,7,8,9,10,11,12,13,14 };
 	PNode treeRoot = NULL;
-	bool heigher;
+	int higher;
 	for (i = 0; i < 14; i++) {
-		InsertKeyValue(&treeRoot, dataArr[i],&heigher);
+		InsertKeyValue(&treeRoot, dataArr[i],&higher);
 		printfTree(treeRoot);
 		printf("\n\n");
 	}
 	return 0;
 }
+
