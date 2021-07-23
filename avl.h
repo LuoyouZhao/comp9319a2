@@ -14,3 +14,4 @@ void leftBalance(PNode* node);
 void rightBalance(PNode* node);
 int InsertKeyValue(PNode* node, dataType keyValue,int* higher);
 int SearchTree(PNode root, int pos);
+void printfTree(PNode root);

@@ -160,6 +160,18 @@ int InsertKeyValue(PNode* node, dataType keyValue,int* higher) {
 	}
 	return 1;
 }
+void printfTree(PNode root) {
+    if (root) {
+        if (root->leftChild) {
+            printf("%d is %d's left child\n", root->leftChild->keyValue, root->keyValue);
+            printfTree(root->leftChild);
+        }
+        if (root->rightChild) {
+            printf("%d is %d's right child\n", root->rightChild->keyValue, root->keyValue);
+            printfTree(root->rightChild);
+        }
+    }
+}
 int main()
 {
 	int i, dataArr[] = { 1,2,3,4,5,6,7,8,9,10,11,12,13,14 };
