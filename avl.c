@@ -179,9 +179,8 @@ int main()
 	int higher;
 	for (i = 0; i < 14; i++) {
 		InsertKeyValue(&treeRoot, dataArr[i],&higher);
-		printfTree(treeRoot);
-		printf("\n\n");
 	}
+	printfTree(treeRoot);
 	return 0;
 }
 
