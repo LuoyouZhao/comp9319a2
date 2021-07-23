@@ -6,17 +6,10 @@
 #define LH 1       //left higher
 #define RH -1      //right higher
  
-typedef struct Node {
-	int index;             
-	int pos;
-	int BalanceFactor;            
-	struct Node *leftChild, *rightChild;
-}*PNode;
- 
- 
+
 //create node
 PNode createNode(int index, int pos) {
-	PNode node = (PNode)malloc(sizeof(Node));
+	PNode node = (PNode)malloc(sizeof(struct Node));
 	node->index = index;
 	node->pos = pos;
 	node->BalanceFactor = EH;
@@ -111,25 +104,26 @@ void rightBalance(PNode* node) {
  
  
 //插入新值,higher用于判定是否需要调整平衡因子
-void InsertKeyValue(PNode* node, int index, int pos, bool* higher) {
+void InsertKeyValue(PNode* node, int index, int pos, int* higher) {
     //create new node
-	(*node) = createNode(index, pos);
-	*higher=true;
-	else if (pos < (*node)->pos) {                  //插入到左子树中
+	if((*node) == NULL) {
+		(*node) = createNode(index, pos);
+		*higher=1;
+	}else if (pos < (*node)->pos) {                  //插入到左子树中
 		if (*higher) {   
 			switch ((*node)->BalanceFactor)
 			{
 			case LH:
 				leftBalance(node);
-				*higher = false;
+				*higher = 0;
 				break;
 			case RH:
 				(*node)->BalanceFactor = EH;
-				*higher = false;
+				*higher = 0;
 				break;
 			case EH:
 				(*node)->BalanceFactor = LH;
-				*higher = true;
+				*higher = 1;
 				break;
 			}
 		}
@@ -140,15 +134,15 @@ void InsertKeyValue(PNode* node, int index, int pos, bool* higher) {
 			{
 			case LH:                                                  
 				(*node)->BalanceFactor = EH;
-				*higher = false;
+				*higher = 0;
 				break;
 			case RH:
 				rightBalance(node);
-				*higher = false;
+				*higher = 0;
 				break;
 			case EH:
 				(*node)->BalanceFactor = RH;
-				*higher = true;
+				*higher = 1;
 				break;
 			}
 		}
@@ -187,9 +181,9 @@ int main()
 {
 	int i, dataArr[] = { 1,2,3,4,5,6,7,8,9,10,11,12,13,14 };
 	PNode treeRoot = NULL;
-	bool heigher;
+	int higher;
 	for (i = 0; i < 14; i++) {
-		InsertKeyValue(&treeRoot, dataArr[i],&heigher);
+		InsertKeyValue(&treeRoot, dataArr[i], 3, &higher);
 		printfTree(treeRoot);
 		printf("\n\n");
 	}

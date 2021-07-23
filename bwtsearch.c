@@ -3,7 +3,7 @@
 #include <math.h>
 #include <string.h>
 #include <time.h>
-#include <avl.h>
+//#include <avl.h>
 #define MAX 10000
 #define strLen 100
 
