@@ -3,98 +3,30 @@
 #include <math.h>
 #include <string.h>
 #include <time.h>
-//#include <avl.h>
+#include "avl.h"
 #define MAX 10000
 #define strLen 100
 
-typedef struct Node{
-    int index;
-    struct Node* next;
-}Node;
-
-Node* newNode(int index) {
-    Node* node = (Node *)malloc(sizeof(Node));
-    node->index= index;
-    node->next = NULL;
-    return node;
-}
-
-typedef struct Linklist{
-    Node* head;
-    Node* tail;
-    Node* mid;
-    int midPos;
-    int length;
-}Linklist;
-
-Linklist* newLinklist() {
-    Linklist* linklist = (Linklist*)malloc(sizeof(Linklist));
-    linklist->head = NULL;
-    linklist->tail = NULL;
-    linklist->mid = NULL;
-    linklist->midPos = 0;
-    linklist->length = 0;
-    return linklist;
-}
 
 typedef struct Dictionary{
-    Linklist **linklist;
+    PNode *dic;
 }Dictionary;
 
-void addNode(Dictionary* dictionary, int c, int index) {
-    Node* node = newNode(index);
-    Linklist* p = dictionary->linklist[c];
-    p->length++;
-    if(p->head == NULL) {
-        p->head = node;
-        p->tail = node;
-        p->mid = node;
-        p->midPos = 1;
-    }else {
-        p->tail->next = node;
-        p->tail = node;
-        if(p->midPos < p->length/2){
-            p->mid = p->mid->next;
-            p->midPos++;
-        }
-    }
-}
-
-Dictionary* newDictionary(char* str) {
+Dictionary* newDictionary(char* str, int* record) {
     Dictionary* dictionary = (Dictionary*)malloc(sizeof(dictionary));
-    dictionary->linklist = (Linklist**)malloc(128*sizeof(Linklist*));
+    dictionary->dic = (PNode*)malloc(128*sizeof(PNode));
     for(int i=0; i<128; i++) {
-        dictionary->linklist[i] = newLinklist();
+        dictionary->dic[i] = NULL;
     }
     int length = strlen(str);
+    int higher[128] = {0};
     for(int i = 0; i<length; i++) {
-        addNode(dictionary, str[i], i);
+        char c = str[i];
+        InsertKeyValue(&dictionary->dic[c], record[i], i, &higher[c]);
     }
     return dictionary;
 }
 
-int getIndex(Dictionary* dictionary, int c, int sNumber) {
-    Linklist* p = dictionary->linklist[c];
-    Node* node = NULL;
-    if(sNumber < p->midPos) {
-        node = p->head;
-        int i = 1;
-        while(i != sNumber) {
-            i++;
-            node = node->next;
-        }
-        return node->index;
-    }else {
-        node = p->mid;
-        int i = p->midPos;
-        while(i != sNumber) {
-            i++;
-            node = node->next;
-        }
-        return node->index;
-    }
-    
-}
 
 void outputString(char* str) {
     FILE *fp = fopen("output.txt","w");
@@ -138,7 +70,7 @@ int main(int argc, char** argv) {
     char* lastBwt = malloc((fileLength)*sizeof(char));
     char* firstBwt = malloc((fileLength)*sizeof(char));
     int* lastRecord = malloc((fileLength)*sizeof(int));
-    //int* firstRecord = malloc((fileLength)*sizeof(int));
+    int* firstRecord = malloc((fileLength)*sizeof(int));
 
     //read file, get last BWT
     int i = 0;
@@ -169,13 +101,13 @@ int main(int argc, char** argv) {
     }
     
     //decode bwt
-    //getRecord(firstBwt, firstRecord);
+    getRecord(firstBwt, firstRecord);
     getRecord(lastBwt, lastRecord);
     end = clock();
     printf("part-2:%d\n", end-start);
     
     start = clock();
-    Dictionary* firstDic = newDictionary(firstBwt);
+    Dictionary* firstDic = newDictionary(firstBwt, firstRecord);
     //Dictionary* lastDic = newDictionary(lastBwt);
     char* decodeStr = malloc((fileLength-1)*sizeof(char));
     decodeStr[fileLength-1] = '\0';
@@ -188,7 +120,9 @@ int main(int argc, char** argv) {
 
     start = clock();
     for(int i = fileLength-3; i>=0; i--) {
-        int index = getIndex(firstDic, lastChar, lastInt);
+        //printf("i is %d | lastChar is %d | lastint is %d\n", i, lastChar, lastInt);
+        int index = SearchTree(firstDic->dic[lastChar], lastInt);
+        //printf("    >>>index is %d\n", index);
         decodeStr[i] = lastBwt[index];
         lastChar = lastBwt[index];
         lastInt = lastRecord[index];   

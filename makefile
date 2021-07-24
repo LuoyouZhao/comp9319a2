@@ -1,8 +1,7 @@
-all:avl 
-
-# bwtsearch: bwtsearch.c
-# 	gcc -lm bwtsearch.c -o bwtsearch
-avl: avl.c
-	gcc -lm avl.c -o avl
+all:bwtsearch
+bwtsearch: bwtsearch.c
+	gcc -c avl.c
+	gcc -c bwtsearch.c
+	gcc -o bwtsearch bwtsearch.o avl.o
 # clean:
 # 	rm bwtsearch avl
