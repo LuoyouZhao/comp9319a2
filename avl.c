@@ -12,15 +12,15 @@ typedef int dataType;
  
  
 //为新建一个节点
-PNode createNode(dataType keyValue) {
+PNode createNode(int keyValue, int index) {
 	PNode newNode = (PNode)malloc(sizeof(struct Node));
 	newNode->keyValue = keyValue;
+	newNode->index = index;
 	newNode->BalanceFactor = EH;
 	newNode->leftChild = NULL;
 	newNode->rightChild = NULL;
 	return newNode;
 }
- 
  
 //右旋 顺时针旋转
 void R_Rotate(PNode* node) {
@@ -78,11 +78,11 @@ void rightBalance(PNode* node) {
 	PNode tmpChild = NULL;
 	switch (rightchild->BalanceFactor)
 	{
-	case RH:                                                                          //RR型失衡
+	case RH:                                                                          //RR inbalance
 		(*node)->BalanceFactor = rightchild->BalanceFactor = EH;
 		L_Rotate(node);
 		break;
-	case LH:                                                                         //RL型失衡
+	case LH:                                                                         //RL inbalance
 		tmpChild = rightchild->leftChild;
 		switch (tmpChild->BalanceFactor)
 		{
@@ -107,9 +107,9 @@ void rightBalance(PNode* node) {
  
  
 //插入新值,higher用于判定是否需要调整平衡因子
-int InsertKeyValue(PNode* node, dataType keyValue,int* higher) {
+int InsertKeyValue(PNode* node, int keyValue, int index, int* higher) {
 	if ((*node) == NULL) {                                    //树中不包含此键值，则新建一个节点，
-		(*node) = createNode(keyValue);
+		(*node) = createNode(keyValue, index);
 		*higher=1;
 	}
 	else if ((*node)->keyValue == keyValue) {                //树中已经包含此键值，则不需要插入
@@ -172,15 +172,29 @@ void printfTree(PNode root) {
         }
     }
 }
+
+int SearchTree(PNode root, int key) {
+	if (root->keyValue == key) {
+		return root->index;
+	}
+	else if (key > root->keyValue && root->rightChild) {
+		return SearchTree(root->rightChild, key);
+	}
+	else if(key < root->keyValue && root->leftChild) {
+		return SearchTree(root->leftChild, key);
+	}
+	else {
+		return -1;
+	}
+
 int main()
 {
 	int i, dataArr[] = { 1,2,3,4,5,6,7,8,9,10,11,12,13,14 };
 	PNode treeRoot = NULL;
 	int higher;
 	for (i = 0; i < 14; i++) {
-		InsertKeyValue(&treeRoot, dataArr[i],&higher);
+		InsertKeyValue(&treeRoot, dataArr[i], 5, &higher);
 	}
 	printfTree(treeRoot);
 	return 0;
 }
-
