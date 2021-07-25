@@ -28,8 +28,8 @@ Dictionary* newDictionary(char* str, int* record) {
 }
 
 
-void outputString(char* str) {
-    FILE *fp = fopen("output.txt","w");
+void outputString(char* str, char* filename) {
+    FILE *fp = fopen(filename,"w");
     fputs(str, fp);
 }
 
@@ -55,10 +55,20 @@ void getRecord(char* str, int* record) {
 
 int main(int argc, char** argv) {
     char* fileName;
-    fileName = argv[1];
-    clock_t start, end;
-    double runtime;
-    start = clock();
+    char* mode;
+    char* match;
+    if(argc == 3) {
+        fileName = argv[1];
+        match = argv[2];
+    }else {
+        mode = argv[1];
+        fileName = argv[2];
+        match = argv[3];
+    }
+    printf("mode is %s\n", mode);
+    printf("match is %s\n", match);
+    printf("fileName is %s\n", fileName);
+
     //get file length
     FILE *fp = fopen(fileName,"r");
     fseek(fp,0,SEEK_END);
@@ -85,10 +95,6 @@ int main(int argc, char** argv) {
     }
     fclose(fp);
 
-    end = clock();
-    printf("part-1:%d\n", end-start);
-
-    start = clock();
     //read dic, get first BWT
     int dicIndex = 0;
     for(int i = 0; i<128; i++){
@@ -103,22 +109,14 @@ int main(int argc, char** argv) {
     //decode bwt
     getRecord(firstBwt, firstRecord);
     getRecord(lastBwt, lastRecord);
-    end = clock();
-    printf("part-2:%d\n", end-start);
-    
-    start = clock();
+
     Dictionary* firstDic = newDictionary(firstBwt, firstRecord);
     //Dictionary* lastDic = newDictionary(lastBwt);
     char* decodeStr = malloc((fileLength-1)*sizeof(char));
-    decodeStr[fileLength-1] = '\0';
     decodeStr[fileLength-2] = lastBwt[0];
     char lastChar = lastBwt[0];
     int lastInt = lastRecord[0];
 
-    end = clock();
-    printf("part-3:%d\n", end-start);
-
-    start = clock();
     for(int i = fileLength-3; i>=0; i--) {
         //printf("i is %d | lastChar is %d | lastint is %d\n", i, lastChar, lastInt);
         int index = SearchTree(firstDic->dic[lastChar], lastInt);
@@ -127,11 +125,74 @@ int main(int argc, char** argv) {
         lastChar = lastBwt[index];
         lastInt = lastRecord[index];   
     }
-    end = clock();
-    printf("part-4:%d\n", end-start);
-    outputString(decodeStr);
-    // for(int i=0; i<fileLength; i++) {
-    //     printf("%c", decodeStr[i]);
-    // }
-    // printf("\n");
+    // free
+    free(firstBwt);
+    free(firstRecord);
+    free(lastBwt);
+    free(lastRecord);
+    free(firstDic);
+
+    //search part
+    if(strcmp(mode, "-o")==0) {                         // -o mode
+        printf("-------check-------\n");
+        outputString(decodeStr, match);
+        return 0;
+    }
+    int* decodeRecord = malloc((fileLength)*sizeof(int));
+    getRecord(decodeStr, decodeRecord);
+    Dictionary* decodeDic = newDictionary(decodeStr, decodeRecord);
+    if(strcmp(mode, "-m")==0){                    // -m mode
+        int c = match[0];
+        int length = strlen(match);
+        int number = 1;
+        int i = SearchTree(decodeDic->dic[c], number);
+        int output = 0;
+        while(i != -1) {
+            for(int j = 1; j<length; j++) {
+                if(match[j] != decodeStr[i+j])
+                    break;
+                if(j == length-1)
+                    output++;
+            }
+            number++;
+            i = SearchTree(decodeDic->dic[c], number);
+        }
+        printf("%d\n", output);
+    }else if(strcmp(mode, "-n")==0){                    // -n mode
+        int c = match[0];
+        int length = strlen(match);
+        int number = 1;
+        int i = SearchTree(decodeDic->dic[c], number);
+        int output = 0;
+        int nextLine;
+        int check = 0;;
+        while(i != -1) {
+            check = 1;
+            for(int j = 1; j<length; j++) {
+                if(match[j] != decodeStr[i+j]) {
+                    check = 0;
+                    break;
+                }
+                check = j;
+            }
+            if(check) {
+                output++;
+                nextLine = i+check;
+                while(decodeStr[nextLine] != 10) {
+                    nextLine++;
+                }
+                do {
+                    number++;
+                    i = SearchTree(decodeDic->dic[c], number);
+                }while( i<nextLine && i!=-1);
+            }else {
+                number++;
+                i = SearchTree(decodeDic->dic[c], number);
+            }
+        }
+        printf("%d\n", output);
+    }else {
+        //no mode part
+    }
+
 }
