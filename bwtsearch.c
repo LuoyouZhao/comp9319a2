@@ -57,17 +57,17 @@ int main(int argc, char** argv) {
     char* fileName;
     char* mode;
     char* match;
-    if(argc == 3) {
+    if(argc == 4) {
         fileName = argv[1];
-        match = argv[2];
+        match = argv[3];
     }else {
         mode = argv[1];
         fileName = argv[2];
-        match = argv[3];
+        match = argv[4];
     }
-    printf("mode is %s\n", mode);
-    printf("match is %s\n", match);
-    printf("fileName is %s\n", fileName);
+    // printf("mode is %s\n", mode);
+    // printf("match is %s\n", match);
+    // printf("fileName is %s\n", fileName);
 
     //get file length
     FILE *fp = fopen(fileName,"r");
@@ -112,7 +112,8 @@ int main(int argc, char** argv) {
 
     Dictionary* firstDic = newDictionary(firstBwt, firstRecord);
     //Dictionary* lastDic = newDictionary(lastBwt);
-    char* decodeStr = malloc((fileLength-1)*sizeof(char));
+    char* decodeStr = malloc((fileLength)*sizeof(char));
+    decodeStr[fileLength-1] = firstBwt[0];
     decodeStr[fileLength-2] = lastBwt[0];
     char lastChar = lastBwt[0];
     int lastInt = lastRecord[0];
@@ -141,12 +142,12 @@ int main(int argc, char** argv) {
     int* decodeRecord = malloc((fileLength)*sizeof(int));
     getRecord(decodeStr, decodeRecord);
     Dictionary* decodeDic = newDictionary(decodeStr, decodeRecord);
+    int c = match[0];
+    int length = strlen(match);
+    int number = 1;
+    i = SearchTree(decodeDic->dic[c], number);
+    int output = 0;
     if(strcmp(mode, "-m")==0){                    // -m mode
-        int c = match[0];
-        int length = strlen(match);
-        int number = 1;
-        int i = SearchTree(decodeDic->dic[c], number);
-        int output = 0;
         while(i != -1) {
             for(int j = 1; j<length; j++) {
                 if(match[j] != decodeStr[i+j])
@@ -159,11 +160,6 @@ int main(int argc, char** argv) {
         }
         printf("%d\n", output);
     }else if(strcmp(mode, "-n")==0){                    // -n mode
-        int c = match[0];
-        int length = strlen(match);
-        int number = 1;
-        int i = SearchTree(decodeDic->dic[c], number);
-        int output = 0;
         int nextLine;
         int check = 0;;
         while(i != -1) {
@@ -193,6 +189,36 @@ int main(int argc, char** argv) {
         printf("%d\n", output);
     }else {
         //no mode part
+        int nextLine;
+        int check = 0;;
+        while(i != -1) {
+            check = 1;
+            for(int j = 1; j<length; j++) {
+                if(match[j] != decodeStr[i+j]) {
+                    check = 0;
+                    break;
+                }
+                check = j;
+            }
+            if(check) {
+                nextLine = i;
+                while(decodeStr[nextLine-1] != 10 && nextLine!=0) {
+                    nextLine--;
+                }
+                while(decodeStr[nextLine] != 10) {
+                    printf("%c", decodeStr[nextLine]);
+                    nextLine++;
+                }
+                printf("\n");
+                do {
+                    number++;
+                    i = SearchTree(decodeDic->dic[c], number);
+                }while( i<nextLine && i!=-1);
+            }else {
+                number++;
+                i = SearchTree(decodeDic->dic[c], number);
+            }
+        }
     }
 
 }
